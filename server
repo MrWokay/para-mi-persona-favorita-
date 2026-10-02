@@ -1,0 +1,41 @@
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+
+const PORT = 3000;
+
+const server = http.createServer((req, res) => {
+  if (req.method === 'GET' && req.url === '/') {
+    fs.readFile(path.join(__dirname, 'index.html'), (err, data) => {
+      if (err) {
+        res.writeHead(500);
+        res.end('Error al cargar index.html');
+      } else {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(data);
+      }
+    });
+  } else if (req.method === 'POST' && req.url === '/api/responder') {
+    let body = '';
+    req.on('data', chunk => { body += chunk.toString(); });
+    req.on('end', () => {
+      const data = JSON.parse(body);
+      const logEntry = `[${data.fecha}] Respuesta: ${data.respuesta}\n`;
+      
+      fs.appendFile('respuestas.txt', logEntry, (err) => {
+        if (err) console.error('Error guardando la respuesta:', err);
+        else console.log('¡Respuesta registrada en respuestas.txt!', logEntry.trim());
+      });
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ status: 'ok' }));
+    });
+  } else {
+    res.writeHead(404);
+    res.end();
+  }
+});
+
+server.listen(PORT, () => {
+  console.log(`Servidor escuchando en http://localhost:${PORT}`);
+});
