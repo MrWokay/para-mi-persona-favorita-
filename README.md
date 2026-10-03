@@ -1,4 +1,3 @@
-# para-mi-persona-favorita
 !DOCTYPE html>
 <html lang="es">
 <head>
